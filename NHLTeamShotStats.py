@@ -7,24 +7,24 @@ from collections import OrderedDict
 
 
 url = 'https://statsapi.web.nhl.com/api/v1/teams/'
-team_shot_stats = {}
-team_goal_stats = {}
-team_shots_per_goal = {}
+team_shot_stats_dict = {}
+team_goal_stats_dict = {}
+team_shots_per_goal_dict = {}
 
 for x in range(1,55):
 	if x == 11 or x == 27 or 30<x<52: #excluding non-team ids
 		continue
-	http_response_object = urlopen(url + str(x) + '/stats')
-	html_stream = http_response_object.read()
-	http_response_object.close()
-	team_info = json.loads(html_stream)
-	team_stats_dict = team_info['stats'][0]['splits'][0]
-	goals_per_game_stats = team_stats_dict['stat']['goalsPerGame']
-	shots_per_game_stats = team_stats_dict['stat']['shotsPerGame']
+	http_response_stream = urlopen(url + str(x) + '/stats')
+	http_json = http_response_stream.read()
+	http_response_stream.close()
+	team_info_dict = json.loads(http_json)
+	team_stats_dict = team_info_dict['stats'][0]['splits'][0]
+	goals_per_game = team_stats_dict['stat']['goalsPerGame']
+	shots_per_game = team_stats_dict['stat']['shotsPerGame']
 	team_name = team_stats_dict['team']['name']
-	team_shot_stats.update({team_name : shots_per_game_stats})
-	team_goal_stats.update({team_name : goals_per_game_stats})
-	team_shots_per_goal.update({team_name : shots_per_game_stats/goals_per_game_stats})
+	team_shot_stats_dict.update({team_name : shots_per_game})
+	team_goal_stats_dict.update({team_name : goals_per_game})
+	team_shots_per_goal_dict.update({team_name : shots_per_game/goals_per_game})
 
 	print('Downloading ' + team_name + ' stats \n')
 
@@ -45,10 +45,10 @@ def take_value(elem):
 
 rank = 1
 
-for key, value in sorted(team_shots_per_goal.items(), key=take_value, reverse=False):
+for key, value in sorted(team_shots_per_goal_dict.items(), key=take_value, reverse=False):
 
-	sheet.append_row([key, team_shot_stats[key], team_goal_stats[key], value, rank])
-	print('Uploading ' + key + '\t' + str(team_shot_stats[key]) + '\t' + str(team_goal_stats[key]) + '\t' + str(team_shots_per_goal[key]) + ' \t Rank: ' + str(rank) + '\n')
+	sheet.append_row([key, team_shot_stats_dict[key], team_goal_stats_dict[key], value, rank])
+	print('Uploading ' + key + '\t' + str(team_shot_stats_dict[key]) + '\t' + str(team_goal_stats_dict[key]) + '\t' + str(team_shots_per_goal_dict[key]) + ' \t Rank: ' + str(rank) + '\n')
 	rank += 1
 
 spreadsheet.share('mcintojj@gmail.com', perm_type='user', role='writer')
